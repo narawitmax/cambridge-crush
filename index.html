@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambridge Crush Matcher</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>💘 Cambridge Crush</h1>
+        <p class="subtitle">Find out if your crush likes you back!</p>
+        
+        <div class="heart">❤️</div>
+
+        <form id="crushForm">
+            <div class="form-group">
+                <label for="yourId">Your CRSid:</label>
+                <input type="text" id="yourId" placeholder="e.g., abc123" required>
+            </div>
+
+            <div class="form-group">
+                <label for="crushId">Your crush's CRSid:</label>
+                <input type="text" id="crushId" placeholder="e.g., crsh67" required>
+            </div>
+
+            <button type="submit" class="btn">Submit 💌</button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div class="info">
+            <strong>How it works:</strong> Enter your CRSid and your crush's CRSid. If they also enter your CRSid as their crush, you'll both be notified of the match! 🎉
+        </div>
+
+        <!-- Admin Access -->
+        <button id="adminBtn" class="btn btn-secondary">Admin Panel</button>
+        
+        <div id="adminPanel" class="admin-panel">
+            <h2>🔐 Admin Panel</h2>
+            <div class="form-group">
+                <label for="adminPassword">Admin Password:</label>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+            </div>
+            <button id="viewDataBtn" class="btn">View All Data</button>
+            <button id="exportDataBtn" class="btn btn-secondary">Export as JSON</button>
+            <div id="crushList" class="crush-list"></div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
