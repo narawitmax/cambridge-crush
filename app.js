@@ -1,3 +1,6 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 // Firebase Configuration
 // Replace these values with your actual Firebase project configuration
 // Get this from: Firebase Console > Project Settings > Your Apps > Firebase SDK snippet
