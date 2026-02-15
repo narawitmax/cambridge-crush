@@ -1,24 +1,20 @@
-// Import Firebase modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-// ============================================
-// FIREBASE CONFIGURATION
-// ============================================
-// TODO: Replace with your Firebase config
+// Firebase Configuration
+// Replace these values with your actual Firebase project configuration
 // Get this from: Firebase Console > Project Settings > Your Apps > Firebase SDK snippet
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+
+// Your web app's Firebase configuration
+export const firebaseConfig = {
+  apiKey: "AIzaSyCIk_jJuWorV_ieo-ljkrIuokT2yC-c7Cs",
+  authDomain: "cambridge-crush-10492.firebaseapp.com",
+  databaseURL: "https://cambridge-crush-10492-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "cambridge-crush-10492",
+  storageBucket: "cambridge-crush-10492.firebasestorage.app",
+  messagingSenderId: "528374729329",
+  appId: "1:528374729329:web:aba7d439b4d776f7efa9d0"
 };
 
-// Admin password (change this!)
-const ADMIN_PASSWORD = "cambridgecrush2024";
+// Admin password - CHANGE THIS!
+export const ADMIN_PASSWORD = "cambridgecrush2024";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

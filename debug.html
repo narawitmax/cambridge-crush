@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - Cambridge Crush</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        #log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+        }
+        .result.success {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        .result.error {
+            background: #ffe7e7;
+            border-color: #dc3545;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Cambridge Crush - Debug Tool</h1>
+    <p style="color: #666;">Use this tool to test your Firebase connection and match logic.</p>
+    
+    <div class="section">
+        <h2>1. Test Firebase Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. View All Data</h2>
+        <button onclick="viewAllData()">Load All Data</button>
+        <div id="dataResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Test Match Logic</h2>
+        <p style="color: #666; font-size: 14px;">Test the full submission flow with two CRSids</p>
+        <input type="text" id="testYourId" placeholder="Your CRSid (e.g., abc123)">
+        <input type="text" id="testCrushId" placeholder="Crush CRSid (e.g., xyz789)">
+        <br>
+        <button onclick="testSubmission()">Test Full Submission Flow</button>
+        <div id="testResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. Manual Data Entry</h2>
+        <p style="color: #666; font-size: 14px;">Manually save and check data</p>
+        <input type="text" id="manualYourId" placeholder="Your CRSid">
+        <input type="text" id="manualCrushId" placeholder="Crush CRSid">
+        <br>
+        <button onclick="manualSave()">Save to Database</button>
+        <button onclick="manualCheck()">Check for Match</button>
+        <div id="manualResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>5. Clear All Data</h2>
+        <p style="color: #dc3545; font-size: 14px;">⚠️ This will delete all data from the database!</p>
+        <button onclick="clearAllData()" class="danger">Delete All Data</button>
+    </div>
+
+    <div class="section">
+        <h2>Console Log</h2>
+        <button onclick="clearLog()">Clear Log</button>
+        <div id="log">Initializing...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, child, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { firebaseConfig } from './firebase-config.js';
+
+        let app, database;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            log('✅ Firebase initialized successfully');
+        } catch (error) {
+            log('❌ Firebase initialization error: ' + error.message);
+            log('Make sure firebase-config.js is properly configured!');
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        window.clearLog = function() {
+            document.getElementById('log').textContent = '';
+            log('Log cleared. Ready for testing.');
+        }
+
+        window.testConnection = async function() {
+            log('Testing Firebase connection...');
+            const resultDiv = document.getElementById('connectionResult');
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, 'crushes'));
+                log('✅ Successfully connected to Firebase');
+                resultDiv.innerHTML = '<div class="result success">✅ Connection successful!</div>';
+            } catch (error) {
+                log('❌ Connection failed: ' + error.message);
+                resultDiv.innerHTML = '<div class="result error">❌ Connection failed: ' + error.message + '</div>';
+            }
+        }
+
+        window.viewAllData = async function() {
+            log('Loading all data from database...');
+            const resultDiv = document.getElementById('dataResult');
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, 'crushes'));
+                
+                if (!snapshot.exists()) {
+                    log('📭 No data found in database');
+                    resultDiv.innerHTML = '<div class="result">No data in database yet.</div>';
+                    return;
+                }
+
+                const data = snapshot.val();
+                log('📊 Data loaded successfully');
+                
+                let html = '<div class="result"><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                resultDiv.innerHTML = html;
+                
+                for (const [userId, userInfo] of Object.entries(data)) {
+                    if (userInfo.crushes && userInfo.crushes.length > 0) {
+                        log(`👤 ${userId} has crushes: ${userInfo.crushes.map(c => c.crushId).join(', ')}`);
+                    }
+                }
+            } catch (error) {
+                log('❌ Error loading data: ' + error.message);
+                resultDiv.innerHTML = '<div class="result error">Error: ' + error.message + '</div>';
+            }
+        }
+
+        function normalizeCRSid(id) {
+            return id.trim().toLowerCase();
+        }
+
+        function isValidCRSid(id) {
+            const regex = /^[a-z]+[0-9]+$/;
+            return regex.test(id);
+        }
+
+        async function checkForMatch(yourId, crushId) {
+            log(`🔍 Checking: Does ${crushId} have ${yourId} in their crushes?`);
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, `crushes/${crushId}`));
+                
+                if (!snapshot.exists()) {
+                    log(`  ❌ ${crushId} has no entry in database`);
+                    return false;
+                }
+                
+                const crushInfo = snapshot.val();
+                log(`  📊 ${crushId}'s data: ` + JSON.stringify(crushInfo));
+                
+                if (!crushInfo.crushes || !Array.isArray(crushInfo.crushes)) {
+                    log(`  ❌ ${crushId} has no crushes array`);
+                    return false;
+                }
+                
+                const match = crushInfo.crushes.some(c => c.crushId === yourId);
+                log(`  ${match ? '✅ MATCH FOUND!' : '❌ No match'}`);
+                
+                return match;
+            } catch (error) {
+                log('❌ Error checking match: ' + error.message);
+                return false;
+            }
+        }
+
+        async function saveCrush(yourId, crushId) {
+            log(`💾 Saving: ${yourId} → ${crushId}`);
+            try {
+                const crushRef = ref(database, `crushes/${yourId}`);
+                const snapshot = await get(crushRef);
+                
+                let crushInfo;
+                
+                if (snapshot.exists()) {
+                    crushInfo = snapshot.val();
+                    log(`  📦 Found existing data for ${yourId}`);
+                } else {
+                    crushInfo = {
+                        yourId: yourId,
+                        crushes: []
+                    };
+                    log(`  📦 Creating new entry for ${yourId}`);
+                }
+
+                const alreadyExists = crushInfo.crushes.some(c => c.crushId === crushId);
+
+                if (alreadyExists) {
+                    log(`  ⚠️ ${yourId} already has ${crushId} - skipping`);
+                } else {
+                    crushInfo.crushes.push({
+                        crushId: crushId,
+                        timestamp: new Date().toISOString()
+                    });
+                    log(`  ➕ Added ${crushId} to ${yourId}'s crushes`);
+                }
+
+                await set(crushRef, crushInfo);
+                log(`  ✅ Saved successfully`);
+                return true;
+            } catch (error) {
+                log('❌ Error saving: ' + error.message);
+                return false;
+            }
+        }
+
+        window.testSubmission = async function() {
+            const yourId = normalizeCRSid(document.getElementById('testYourId').value);
+            const crushId = normalizeCRSid(document.getElementById('testCrushId').value);
+            const resultDiv = document.getElementById('testResult');
+
+            log('═'.repeat(50));
+            log(`🧪 TESTING SUBMISSION: ${yourId} → ${crushId}`);
+            
+            if (!isValidCRSid(yourId) || !isValidCRSid(crushId)) {
+                log('❌ Invalid CRSid format');
+                resultDiv.innerHTML = '<div class="result error">Invalid CRSid format. Must be letters followed by numbers (e.g., abc123)</div>';
+                return;
+            }
+
+            log('Step 1: Saving data...');
+            const saved = await saveCrush(yourId, crushId);
+            if (!saved) {
+                resultDiv.innerHTML = '<div class="result error">Failed to save</div>';
+                return;
+            }
+
+            log('Step 2: Checking for match...');
+            const isMatch = await checkForMatch(yourId, crushId);
+
+            if (isMatch) {
+                log('🎉 MATCH DETECTED!');
+                resultDiv.innerHTML = '<div class="result success">🎉 IT\'S A MATCH! ' + yourId + ' ↔️ ' + crushId + '</div>';
+            } else {
+                log('✅ Saved, no match yet');
+                resultDiv.innerHTML = '<div class="result">✅ Crush recorded. No match yet.</div>';
+            }
+
+            log('═'.repeat(50));
+        }
+
+        window.manualSave = async function() {
+            const yourId = normalizeCRSid(document.getElementById('manualYourId').value);
+            const crushId = normalizeCRSid(document.getElementById('manualCrushId').value);
+            const resultDiv = document.getElementById('manualResult');
+
+            if (!yourId || !crushId) {
+                resultDiv.innerHTML = '<div class="result error">Please enter both CRSids</div>';
+                return;
+            }
+
+            const saved = await saveCrush(yourId, crushId);
+            if (saved) {
+                resultDiv.innerHTML = '<div class="result success">✅ Saved: ' + yourId + ' → ' + crushId + '</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="result error">Failed to save</div>';
+            }
+        }
+
+        window.manualCheck = async function() {
+            const yourId = normalizeCRSid(document.getElementById('manualYourId').value);
+            const crushId = normalizeCRSid(document.getElementById('manualCrushId').value);
+            const resultDiv = document.getElementById('manualResult');
+
+            if (!yourId || !crushId) {
+                resultDiv.innerHTML = '<div class="result error">Please enter both CRSids</div>';
+                return;
+            }
+
+            const isMatch = await checkForMatch(yourId, crushId);
+            if (isMatch) {
+                resultDiv.innerHTML = '<div class="result success">✅ MATCH EXISTS! ' + yourId + ' and ' + crushId + ' like each other!</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="result">❌ No match found</div>';
+            }
+        }
+
+        window.clearAllData = async function() {
+            if (!confirm('Are you sure you want to delete ALL data? This cannot be undone!')) {
+                return;
+            }
+
+            log('🗑️ Deleting all data...');
+            try {
+                const crushesRef = ref(database, 'crushes');
+                await remove(crushesRef);
+                log('✅ All data deleted');
+                alert('All data has been deleted!');
+                document.getElementById('dataResult').innerHTML = '';
+            } catch (error) {
+                log('❌ Error deleting data: ' + error.message);
+                alert('Error deleting data: ' + error.message);
+            }
+        }
+
+        log('Debug tool ready! Click "Test Connection" to begin.');
+    </script>
+</body>
+</html>
