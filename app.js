@@ -9,8 +9,8 @@ import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/1
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
-  apiKey: "AIzaSyCIk_jJuWorV_ieo-ljkrIuokT2yC-c7Cs",
-  authDomain: "cambridge-crush-10492.firebaseapp.com",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   databaseURL: "https://cambridge-crush-10492-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "cambridge-crush-10492",
   storageBucket: "cambridge-crush-10492.firebasestorage.app",
