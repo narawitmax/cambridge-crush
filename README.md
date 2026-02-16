@@ -10,7 +10,6 @@ A simple web application for Cambridge students to anonymously submit their crus
 - 📊 Admin panel for data management
 - 📥 Export data functionality
   
-=
 
 ## Privacy
 
