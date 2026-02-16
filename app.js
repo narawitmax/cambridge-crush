@@ -16,11 +16,14 @@ export const firebaseConfig = {
   storageBucket: "cambridge-crush-10492.firebasestorage.app",
   messagingSenderId: "528374729329",
   appId: "1:528374729329:web:aba7d439b4d776f7efa9d0"
-};admin
+};
+
+// Admin password - CHANGE THIS!
+export const ADMIN_PASSWORD = "cambridgecrush2024";
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-
 
 console.log("DOM fully loaded");
 
@@ -46,9 +49,8 @@ function showMessage(text, type) {
   const messageDiv = document.getElementById("message");
   messageDiv.textContent = text;
   messageDiv.className = `message ${type}`;
-  messageDiv.style.display = "block"; // ← ADD THIS
+  messageDiv.style.display = "block";
 }
-
 
 async function checkForMatch(yourId, crushId) {
   const snapshot = await get(ref(database, `crushes/${crushId}`));
@@ -133,3 +135,86 @@ form.addEventListener('submit', async (e) => {
     // Clear form
     form.reset();
 });
+
+// Admin panel toggle
+adminBtn.addEventListener('click', () => {
+    adminPanel.style.display = adminPanel.style.display === 'none' || adminPanel.style.display === '' ? 'block' : 'none';
+});
+
+// View all data (admin)
+viewDataBtn.addEventListener('click', async () => {
+    if (adminPassword.value !== ADMIN_PASSWORD) {
+        alert('Incorrect admin password!');
+        return;
+    }
+
+    crushList.innerHTML = '<div class="loading">Loading data...</div>';
+
+    try {
+        const dbRef = ref(database);
+        const snapshot = await get(child(dbRef, 'crushes'));
+
+        if (!snapshot.exists()) {
+            crushList.innerHTML = '<div class="loading">No data found.</div>';
+            return;
+        }
+
+        const data = snapshot.val();
+        let html = '';
+
+        for (const [userId, userInfo] of Object.entries(data)) {
+            html += `<div class="crush-item">
+                <strong>${userId}</strong> has crushes on:<br>`;
+            
+            if (userInfo.crushes && userInfo.crushes.length > 0) {
+                userInfo.crushes.forEach(crush => {
+                    html += `• ${crush.crushId} (${new Date(crush.timestamp).toLocaleString()})<br>`;
+                });
+            } else {
+                html += 'No crushes recorded<br>';
+            }
+            
+            html += `</div>`;
+        }
+
+        crushList.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        crushList.innerHTML = '<div class="loading">Error loading data.</div>';
+    }
+});
+
+// Export data as JSON
+exportDataBtn.addEventListener('click', async () => {
+    if (adminPassword.value !== ADMIN_PASSWORD) {
+        alert('Incorrect admin password!');
+        return;
+    }
+
+    try {
+        const dbRef = ref(database);
+        const snapshot = await get(child(dbRef, 'crushes'));
+
+        if (!snapshot.exists()) {
+            alert('No data to export.');
+            return;
+        }
+
+        const data = snapshot.val();
+        const jsonString = JSON.stringify(data, null, 2);
+        
+        // Create download link
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cambridge-crush-data-${new Date().toISOString()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error exporting data:', error);
+        alert('Error exporting data.');
+    }
+``});
